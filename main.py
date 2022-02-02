@@ -3,14 +3,23 @@ from random import randint
 
 
 class Snake:
-    dx = 0
-    dy = 1
+    dx = 1
+    dy = 0
     segments = [[2, 3], [3, 3], [4, 3]]
 
     def move(self):
-        for p in self.segments:
-            p[0] += self.dx
-            p[1] += self.dy
+        global end_game
+        if board[self.segments[-1][0]][self.segments[-1][1]] != "yellow":
+            del self.segments[0]
+        else:
+            board[self.segments[-1][0]][self.segments[-1][1]] = "silver"
+            board[randint(0, n - 1)][randint(0, m - 1)] = "yellow"
+        self.segments.append([self.segments[-1][0] + self.dx, self.segments[-1][1] + self.dy])
+        if not(0 <= self.segments[-1][0] < n) or not(0 <= self.segments[-1][1] < m):
+            end_game = True
+        if self.segments[-1] in self.segments[:-1]:
+            end_game = True
+
 
     def key_pressed(self, event):
         if event.keysym == "Right":
@@ -37,10 +46,12 @@ def draw(board, snake):  # отображает внутреннее предс�
 
 
 def update():
-    # board[randint(0, n - 1)][randint(0, m - 1)] = "green"
-    snake.move()
-    draw(board, snake)
-    window.after(1000, update)
+    if end_game:
+        c.create_rectangle(0, 0, 600, 600, fill="blue")
+    else:
+        snake.move()
+        draw(board, snake)
+        window.after(1000, update)
 
 
 window = tkinter.Tk()
@@ -54,10 +65,11 @@ cell_width = width // n  # ширина ячейки
 cell_height = height // m  # высота ячейки
 
 board = [["silver"] * n for i in range(m)]
-board[3][0] = "blue"
+board[randint(0, n - 1)][randint(0, m - 1)] = "yellow"
 snake = Snake()
 draw(board, snake)
 window.bind("<KeyPress>", snake.key_pressed)
+end_game = False
 window.after(1000, update)
 
 window.mainloop()
